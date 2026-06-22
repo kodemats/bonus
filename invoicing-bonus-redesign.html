@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Faktureringsbonus - forslag til redesign</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    /* Palette lifted from the current page */
+    --navy:#0B2A4A;
+    --navy-soft:#14365A;
+    --ink:#0B2A4A;
+    --muted:#5C7894;
+    --cyan:#13B5DC;
+    --cyan-deep:#0E94B8;
+    --panel:#E9F4FB;
+    --panel-2:#F3F9FD;
+    --green:#33B98A;
+    --green-deep:#1F9E72;
+    --amber:#E9C766;
+    --amber-soft:#F5ECCE;
+    --behind:#F0857A;
+    --line:#E3EBF2;
+    --white:#fff;
+    --shadow:0 12px 34px rgba(11,42,74,.10);
+    --shadow-sm:0 6px 16px rgba(11,42,74,.07);
+    --radius:18px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    color:var(--ink);
+    background:#F6FAFD;
+    -webkit-font-smoothing:antialiased;
+    line-height:1.5;
+  }
+  h1,h2,h3,h4{font-family:'Plus Jakarta Sans','Inter',sans-serif;margin:0;color:var(--navy)}
+  .wrap{max-width:1160px;margin:0 auto;padding:34px 28px 60px}
+
+  /* ---------- top ---------- */
+  .crumbs{display:flex;align-items:center;gap:10px;color:var(--navy);font-weight:600;font-size:15px;margin-bottom:22px}
+  .crumbs .arrow{font-size:18px}
+  .head{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;margin-bottom:18px}
+  .head h1{font-size:34px;font-weight:800;letter-spacing:-.5px}
+  .head p{margin:8px 0 0;color:var(--muted);max-width:560px;font-size:15px}
+
+  .tabs{display:flex;gap:6px;border-bottom:1px solid var(--line);margin:8px 0 26px}
+  .tab{padding:12px 18px;font-weight:600;font-size:14px;color:var(--muted);border-bottom:3px solid transparent;cursor:pointer}
+  .tab.active{color:var(--navy);border-color:var(--cyan)}
+
+  /* ---------- focus toggle ---------- */
+  .toggle-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:20px}
+  .toggle-row .lbl{font-size:13px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+  .seg{display:inline-flex;background:#E7EFF6;border-radius:999px;padding:4px}
+  .seg button{border:0;background:transparent;font:inherit;font-weight:700;font-size:14px;color:var(--navy);
+    padding:9px 20px;border-radius:999px;cursor:pointer;transition:.18s}
+  .seg button.on{background:var(--navy);color:#fff;box-shadow:0 4px 12px rgba(11,42,74,.25)}
+
+  /* ---------- hero ---------- */
+  .hero{
+    display:grid;grid-template-columns:340px 1fr;gap:22px;
+    background:linear-gradient(135deg,#EAF5FC 0%,#F3FAFD 60%,#FFFFFF 100%);
+    border:1px solid #DCEBF6;border-radius:24px;padding:30px;box-shadow:var(--shadow);margin-bottom:22px;
+  }
+  .gauge{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+  .ring-wrap{position:relative;width:230px;height:230px}
+  .ring-wrap svg{transform:rotate(-90deg)}
+  .ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 30px;text-align:center}
+  .ring-center .pct{font-family:'Plus Jakarta Sans';font-weight:800;font-size:34px;color:var(--navy);letter-spacing:-1px;line-height:1}
+  .ring-center .pctlbl{font-size:10.5px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-top:6px;line-height:1.35}
+  .ring-center .since{font-size:10px;color:var(--muted);margin-top:7px;max-width:130px;line-height:1.35}
+
+  /* celebration / glitter when over the selected bonus goal */
+  .gauge.celebrate .ring-wrap{filter:drop-shadow(0 0 16px rgba(51,185,138,.45))}
+  .gauge.celebrate .pct{
+    background:linear-gradient(90deg,#1F9E72,#13B5DC,#F5C24B,#1F9E72);
+    background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;
+    animation:shimmer 3.2s linear infinite;
+  }
+  @keyframes shimmer{to{background-position:300% 0}}
+  .sparkles{position:absolute;inset:-20px;pointer-events:none;opacity:0;transition:opacity .45s}
+  .gauge.celebrate .sparkles{opacity:1}
+  .sparkles b{position:absolute;opacity:0;transform:translate(-50%,-50%) scale(.4);
+    animation:twinkle 1.9s ease-in-out infinite;filter:drop-shadow(0 0 5px currentColor)}
+  @keyframes twinkle{
+    0%,100%{opacity:0;transform:translate(-50%,-50%) scale(.35) rotate(0deg)}
+    50%{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(20deg)}
+  }
+  .secured{margin-top:14px;display:none;align-items:center;gap:8px;background:#E7F7F0;border:1px solid #BCEAD6;
+    color:var(--green-deep);padding:8px 14px;border-radius:999px;font-weight:700;font-size:13px}
+  .gauge.celebrate .secured{display:inline-flex}
+  .gauge.celebrate .tierflag{display:none}
+  .tierflag{margin-top:16px;display:inline-flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);
+    padding:8px 14px;border-radius:999px;font-weight:700;font-size:13px;color:var(--navy);box-shadow:var(--shadow-sm)}
+  .dot{width:10px;height:10px;border-radius:50%}
+
+  /* goals */
+  .goals{display:flex;flex-direction:column;gap:16px}
+  .goal{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;position:relative;transition:.2s}
+  .goal.focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(19,181,220,.18)}
+  .goal-top{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+  .goal-name{font-family:'Plus Jakarta Sans';font-weight:800;font-size:18px;display:flex;align-items:center;gap:9px}
+  .goal-name .badge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px}
+  .b95{background:#E7F7F0;color:var(--green-deep)}
+  .b100{background:#FBF1D8;color:#9A7B16}
+  .goal-hours{font-size:13px;color:var(--muted)}
+  .goal-hours b{color:var(--navy);font-size:15px}
+  .bar{height:14px;border-radius:999px;background:#EEF3F8;margin:14px 0 10px;overflow:hidden;position:relative}
+  .bar > span{display:block;height:100%;border-radius:999px;transition:width 1.1s cubic-bezier(.2,.8,.2,1)}
+  .bar .marker{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--navy);opacity:.35}
+  .goal-foot{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+  .pill{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:600;padding:6px 12px;border-radius:999px}
+  .pill.behind{background:#FDECEA;color:#C9483B}
+  .pill.ahead{background:#E7F7F0;color:var(--green-deep)}
+  .goal-cta{font-size:13px;color:var(--muted)}
+  .goal-cta b{color:var(--navy)}
+
+  /* ---------- mission ---------- */
+  .mission{
+    background:linear-gradient(120deg,var(--navy) 0%,#123E66 55%,#0E5E7E 100%);
+    color:#fff;border-radius:24px;padding:28px 30px;box-shadow:var(--shadow);margin-bottom:22px;
+    display:grid;grid-template-columns:1fr auto;gap:24px;align-items:center;position:relative;overflow:hidden
+  }
+  .mission::after{content:"";position:absolute;right:-60px;top:-60px;width:240px;height:240px;border-radius:50%;
+    background:radial-gradient(circle,rgba(19,181,220,.35),transparent 70%)}
+  .mission .eyebrow{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#8FD7EC;font-weight:700}
+  .mission h2{color:#fff;font-size:26px;margin:8px 0 6px;font-weight:800;position:relative;z-index:1}
+  .mission p{margin:0;color:#C5DCEC;font-size:15px;max-width:520px;position:relative;z-index:1}
+  .mission .big{position:relative;z-index:1;text-align:center;background:rgba(255,255,255,.08);
+    border:1px solid rgba(255,255,255,.18);border-radius:18px;padding:18px 26px;backdrop-filter:blur(2px)}
+  .mission .big .num{font-family:'Plus Jakarta Sans';font-weight:800;font-size:46px;line-height:1;color:#fff}
+  .mission .big .unit{font-size:13px;color:#9FD3E8;margin-top:6px;font-weight:600}
+  .mission .big .sub{font-size:12px;color:#7FB8D2;margin-top:4px}
+
+  /* ---------- stat row ---------- */
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:22px}
+  .stat{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow-sm)}
+  .stat .k{font-size:12px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.06em;display:flex;align-items:center;gap:8px}
+  .stat .v{font-family:'Plus Jakarta Sans';font-weight:800;font-size:30px;margin-top:8px;color:var(--navy)}
+  .stat .d{font-size:13px;color:var(--muted);margin-top:4px}
+  .streak{display:flex;gap:5px;margin-top:10px}
+  .streak i{width:18px;height:18px;border-radius:5px;display:inline-block;background:#E7EFF6}
+  .streak i.hit{background:var(--green)}
+  .streak i.miss{background:#F3C9C3}
+
+  /* ---------- weekly chart ---------- */
+  .card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:24px 26px;box-shadow:var(--shadow-sm)}
+  .card h3{font-size:18px;font-weight:800;margin-bottom:4px}
+  .card .csub{color:var(--muted);font-size:13px;margin-bottom:20px}
+  .chart{display:flex;align-items:flex-end;gap:14px;height:210px;padding:0 4px}
+  .col{flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;height:100%;justify-content:flex-end}
+  .stack{position:relative;width:60%;max-width:34px;height:100%;display:flex;flex-direction:column;justify-content:flex-end}
+  .stack .avail{position:absolute;left:0;right:0;bottom:0;border-radius:7px;background:repeating-linear-gradient(135deg,#F0E6C4,#F0E6C4 6px,#F5EED2 6px,#F5EED2 12px);border:1px dashed #DEC97E}
+  .stack .billed{position:relative;border-radius:7px;width:100%;transition:height 1s cubic-bezier(.2,.8,.2,1)}
+  .billed.gold{background:linear-gradient(180deg,#F4CE5E,#D69A1C)}
+  .billed.good{background:linear-gradient(180deg,#3FC796,#2AA679)}
+  .billed.ok{background:linear-gradient(180deg,#7FD4F0,#3FA9CC)}
+  .billed.low{background:linear-gradient(180deg,#9FB6C9,#7E97AC)}
+  .billed.future{background:repeating-linear-gradient(180deg,rgba(19,181,220,.22),rgba(19,181,220,.22) 4px,transparent 4px,transparent 8px);border:1.5px dashed var(--cyan)}
+  .wk{font-size:12px;font-weight:700;color:var(--navy)}
+  .wknum{width:26px;height:26px;border-radius:50%;background:var(--navy);color:#fff;font-size:12px;font-weight:700;
+    display:flex;align-items:center;justify-content:center}
+  .wknum.future{background:var(--cyan)}
+  .legend{display:flex;gap:22px;flex-wrap:wrap;margin-top:22px;font-size:13px;color:var(--muted)}
+  .legend span{display:inline-flex;align-items:center;gap:8px}
+  .sw{width:16px;height:12px;border-radius:4px;display:inline-block}
+
+  .assump{margin-top:26px;font-size:12.5px;color:var(--muted);background:#F1F6FA;border:1px dashed #D5E2ED;border-radius:14px;padding:16px 18px}
+  .assump b{color:var(--navy)}
+
+  @media(max-width:880px){
+    .hero{grid-template-columns:1fr}
+    .mission{grid-template-columns:1fr}
+    .stats{grid-template-columns:1fr}
+    .head h1{font-size:28px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="crumbs"><span class="arrow">&larr;</span> Min side</div>
+
+  <div class="head">
+    <div>
+      <h1>Faktureringsbonus</h1>
+      <p>Hvor nær du er kvartalsbonusen, og nøyaktig hva som skal til for å nå den.</p>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active">Dette kvartalet</div>
+    <div class="tab">Forrige kvartal</div>
+    <div class="tab">I år</div>
+    <div class="tab">Forrige uke</div>
+  </div>
+
+  <div class="toggle-row">
+    <span class="lbl">Jeg sikter mot</span>
+    <div class="seg">
+      <button id="t95" class="on" onclick="setFocus(95)">95 %-bonus</button>
+      <button id="t100" onclick="setFocus(100)">100 %-bonus</button>
+    </div>
+    <span style="font-size:13px;color:var(--muted)">Igjen av kvartalet: uke 26 + 2 dager i uke 27</span>
+  </div>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="gauge">
+      <div class="ring-wrap">
+        <div class="sparkles" id="sparkles"></div>
+        <svg width="230" height="230" viewBox="0 0 230 230">
+          <circle cx="115" cy="115" r="100" fill="none" stroke="#DCEAF3" stroke-width="16"/>
+          <!-- 95% marker -->
+          <circle cx="115" cy="115" r="100" fill="none" stroke="#33B98A" stroke-width="16"
+            stroke-linecap="round" stroke-dasharray="2 626" stroke-dashoffset="-595" opacity=".9"/>
+          <circle id="progRing" cx="115" cy="115" r="100" fill="none" stroke="url(#g1)" stroke-width="16"
+            stroke-linecap="round" stroke-dasharray="628" stroke-dashoffset="628"/>
+          <defs>
+            <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#13B5DC"/>
+              <stop offset="1" stop-color="#0E94B8"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <div class="ring-center">
+          <div class="pct" id="pctNum">0,00 %</div>
+          <div class="pctlbl" id="pctLbl">396,5 av 387,5 t fakturert</div>
+          <div class="since">Kvartalsstart &rarr; slutten av forrige uke</div>
+        </div>
+      </div>
+      <div class="tierflag">
+        <span class="dot" id="tierDot" style="background:var(--green)"></span>
+        <span id="tierText">7,3 % over 95 %-bonusen</span>
+      </div>
+      <div class="secured" id="secured">&#10003; Bonus sikret &middot; <span id="securedPct">7,3 % over 95 %</span></div>
+    </div>
+
+    <div class="goals">
+      <div class="goal focus" id="goal95">
+        <div class="goal-top">
+          <div class="goal-name">Bonus 1 <span class="badge b95">95 %</span></div>
+          <div class="goal-hours" id="hours95"><b>396,5</b> / 418 t for hele kvartalet</div>
+        </div>
+        <div class="bar"><span id="bar95" style="width:0;background:linear-gradient(90deg,#3FC796,#1F9E72)"></span></div>
+        <div class="goal-foot">
+          <span class="pill ahead" id="pill95">28,4 t foran skjema</span>
+          <span class="goal-cta" id="cta95"><b>21,5 t</b> igjen, ca. 3,1 t/dag de 7 siste dagene</span>
+        </div>
+      </div>
+
+      <div class="goal" id="goal100">
+        <div class="goal-top">
+          <div class="goal-name">Bonus 2 <span class="badge b100">100 %</span></div>
+          <div class="goal-hours" id="hours100"><b>396,5</b> / 440 t for hele kvartalet</div>
+        </div>
+        <div class="bar"><span id="bar100" style="width:0;background:linear-gradient(90deg,#F0C44E,#D69A1C)"></span></div>
+        <div class="goal-foot">
+          <span class="pill ahead" id="pill100">9 t foran skjema</span>
+          <span class="goal-cta" id="cta100"><b>43,5 t</b> igjen, ca. 6,2 t/dag de 7 siste dagene</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MISSION -->
+  <div class="mission">
+    <div>
+      <div class="eyebrow">Ditt trekk denne uka</div>
+      <h2 id="missionTitle">Fakturer 15,4 timer i uke 26 for å sikre Bonus 1</h2>
+      <p id="missionText">Det er 22,1 timer under en normaluke. Klar det, så gjenstår 6,1 t de 2 siste dagene i uke 27, og du lander trygt over 95 % ved kvartalsslutt.</p>
+    </div>
+    <div class="big">
+      <div class="num" id="missionNum">15,4</div>
+      <div class="unit">fakturerbare timer i uke 26</div>
+      <div class="sub" id="missionSub">+ 6,1 t i uke 27 (2 dager)</div>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats">
+    <div class="stat">
+      <div class="k"><span class="dot" style="background:var(--cyan)"></span> <span id="statGapK">Forsprang</span></div>
+      <div class="v" id="statGap">28,4 t</div>
+      <div class="d" id="statGapD">foran 95 %-linja hittil</div>
+    </div>
+    <div class="stat">
+      <div class="k"><span class="dot" style="background:var(--green)"></span> Ukesstreak</div>
+      <div class="v" id="streakV">9 / 12</div>
+      <div class="d">uker du nådde 95 %+ dette kvartalet</div>
+      <div class="streak" id="streakBoxes"></div>
+    </div>
+    <div class="stat">
+      <div class="k"><span class="dot" style="background:var(--amber)"></span> Momentum</div>
+      <div class="v" id="momV">&#9650; +4,7 %</div>
+      <div class="d">siste 4 uker mot kvartalssnittet</div>
+    </div>
+  </div>
+
+  <!-- CHART -->
+  <div class="card">
+    <h3>Timer per uke</h3>
+    <div class="csub">Heltrukken stolpe = fakturert, farget etter oppnådd andel av uka. Stiplet ramme = baseline/mål. Uke 26 og 27 viser timene du trenger.</div>
+    <div class="chart" id="chart"></div>
+    <div class="legend">
+      <span><i class="sw" style="background:linear-gradient(180deg,#F4CE5E,#D69A1C)"></i> 100 %+ av uka</span>
+      <span><i class="sw" style="background:linear-gradient(180deg,#3FC796,#2AA679)"></i> 95-100 % av uka</span>
+      <span><i class="sw" style="background:linear-gradient(180deg,#7FD4F0,#3FA9CC)"></i> Under 95 %</span>
+      <span><i class="sw" style="border:1px dashed #DEC97E;background:#F5EED2"></i> Baseline / mål</span>
+      <span><i class="sw" style="border:1.5px dashed var(--cyan);background:#E9F7FC"></i> Timer du trenger for å nå målet</span>
+    </div>
+  </div>
+
+
+</div>
+
+<script>
+  const D = {
+    billed: 396.5,            // 357,5 + 39 t fra uke 25
+    availableToDate: 387.5,
+    normalDay: 7.5,
+    remainingDays: 7,        // uke 26 = 5 dager, uke 27 = 2 dager
+    target95: 418,
+    target100: 440,
+    // ferdige uker: [uke, baseline/mål, fakturert]
+    done: [
+      [14,5,0],[15,30,32.5],[16,37.5,32.5],[17,37.5,28.5],[18,30,33],
+      [19,37.5,39.5],[20,30,35],[21,37.5,43],[22,30,31.5],[23,37.5,43.5],
+      [24,37.5,38.5],[25,37.5,39]
+    ],
+    // gjenstående: {uke, dager, baseline}
+    future:[ {wk:26,days:5,avail:37.5}, {wk:27,days:2,avail:15} ]
+  };
+
+  const rate = D.billed / D.availableToDate; // 0,9226
+  const nf = (n, d=1) => n.toLocaleString('nb-NO', {minimumFractionDigits:d, maximumFractionDigits:d});
+
+  function setFocus(f){
+    document.getElementById('t95').classList.toggle('on', f===95);
+    document.getElementById('t100').classList.toggle('on', f===100);
+    document.getElementById('goal95').classList.toggle('focus', f===95);
+    document.getElementById('goal100').classList.toggle('focus', f===100);
+
+    const target = f===95 ? D.target95 : D.target100;
+    const need = target - D.billed;                  // gjenstående timer totalt
+    const perDay = need / D.remainingDays;           // jevnt over 7 dager
+    const thisWeek = perDay * D.future[0].days;       // uke 26 (5 dager)
+    const nextWeek = perDay * D.future[1].days;       // uke 27 (2 dager)
+    const normalThisWeek = D.normalDay * D.future[0].days; // 37,5
+    const overtime = thisWeek - normalThisWeek;
+    const lineRate = f===95 ? 0.95 : 1.00;
+    const ahead = D.billed - lineRate*D.availableToDate;   // positiv = foran
+
+    document.getElementById('missionTitle').textContent =
+      'Fakturer ' + nf(thisWeek) + ' timer i uke 26 for å sikre Bonus ' + (f===95?1:2);
+    document.getElementById('missionText').textContent =
+      (overtime>=0
+        ? 'Det er ' + nf(overtime) + ' timer over en normaluke. '
+        : 'Det er ' + nf(Math.abs(overtime)) + ' timer under en normaluke. ')
+      + 'Klar det, så gjenstår ' + nf(nextWeek) + ' t de 2 siste dagene i uke 27, og du lander trygt over '
+      + f + ' % ved kvartalsslutt.';
+    document.getElementById('missionNum').textContent = nf(thisWeek);
+    document.getElementById('missionSub').textContent = '+ ' + nf(nextWeek) + ' t i uke 27 (2 dager)';
+
+    document.getElementById('statGapK').textContent = ahead>=0 ? 'Forsprang' : 'Gap å tette';
+    document.getElementById('statGap').textContent = nf(Math.abs(ahead)) + ' t';
+    document.getElementById('statGapD').textContent =
+      (ahead>=0 ? 'foran ' : 'bak ') + f + ' %-linja hittil';
+
+    const tierDiff = (rate - lineRate)*100;
+    document.getElementById('tierDot').style.background = tierDiff>=0 ? 'var(--green)' : 'var(--behind)';
+    document.getElementById('tierText').textContent =
+      nf(Math.abs(tierDiff)) + (tierDiff>=0 ? ' % over ' : ' % under ') + f + ' %-bonusen';
+
+    // glitter når du er over valgt bonusmål
+    const achieved = rate >= lineRate;
+    document.querySelector('.gauge').classList.toggle('celebrate', achieved);
+    document.getElementById('securedPct').textContent = nf(Math.abs(tierDiff)) + ' % over ' + f + ' %';
+
+    // tegn fremtidige stolper på nytt
+    drawFutureBars(perDay);
+  }
+
+  function renderStats(){
+    // ukesstreak: antall uker med >= 95 % av baseline
+    const boxes = document.getElementById('streakBoxes'); boxes.innerHTML='';
+    let hits = 0;
+    D.done.forEach(([wk,av,bi])=>{
+      const r = av>0 ? bi/av : 0;
+      const hit = r>=0.95;
+      if(hit) hits++;
+      const i = document.createElement('i');
+      i.className = hit ? 'hit' : 'miss';
+      i.title = 'Uke '+wk+': '+(av>0 ? nf(r*100,0)+' %' : '–');
+      boxes.appendChild(i);
+    });
+    document.getElementById('streakV').textContent = hits + ' / ' + D.done.length;
+
+    // momentum: siste 4 uker mot snittet for hele kvartalet (aggregert)
+    const last = D.done.slice(-4);
+    const bSum = a => a.reduce((s,[,,bi])=>s+bi, 0);
+    const aSum = a => a.reduce((s,[,av])=>s+av, 0);
+    const diff = (bSum(last)/aSum(last) - bSum(D.done)/aSum(D.done))*100;
+    const m = document.getElementById('momV');
+    m.textContent = (diff>=0 ? '▲ +' : '▼ ') + nf(diff) + ' %';
+    m.style.color = diff>=0 ? 'var(--navy)' : 'var(--behind)';
+  }
+
+  function renderSparkles(){
+    const box = document.getElementById('sparkles'); box.innerHTML='';
+    const glyphs = ['✦','✧','✨','✤','·'];
+    const colors = ['#F5C24B','#33B98A','#13B5DC','#F5C24B','#7FD4F0'];
+    const c = 135; // senter i 270px-boksen
+    for(let i=0;i<18;i++){
+      const a = Math.random()*Math.PI*2;
+      const r = 98 + Math.random()*44;
+      const s = document.createElement('b');
+      s.textContent = glyphs[i % glyphs.length];
+      s.style.left = (c + Math.cos(a)*r).toFixed(1) + 'px';
+      s.style.top  = (c + Math.sin(a)*r).toFixed(1) + 'px';
+      s.style.color = colors[i % colors.length];
+      s.style.fontSize = (9 + Math.random()*11).toFixed(0) + 'px';
+      s.style.animationDelay = (Math.random()*1.9).toFixed(2) + 's';
+      box.appendChild(s);
+    }
+  }
+
+  function renderGoals(){
+    [[95,0.95,D.target95,'95'],[100,1.00,D.target100,'100']].forEach(([f,lr,tgt])=>{
+      const ahead = D.billed - lr*D.availableToDate;
+      const need = tgt - D.billed;
+      const perDay = need / D.remainingDays;
+      document.getElementById('hours'+f).innerHTML = '<b>'+nf(D.billed)+'</b> / '+tgt+' t for hele kvartalet';
+      const pill = document.getElementById('pill'+f);
+      pill.className = 'pill ' + (ahead>=0 ? 'ahead' : 'behind');
+      pill.textContent = nf(Math.abs(ahead)) + (ahead>=0 ? ' t foran skjema' : ' t bak skjema');
+      document.getElementById('cta'+f).innerHTML =
+        '<b>'+nf(need)+' t</b> igjen, ca. '+nf(perDay)+' t/dag de '+D.remainingDays+' siste dagene';
+    });
+  }
+
+  function animate(){
+    // ring
+    const circ = 628;
+    const ring = document.getElementById('progRing');
+    requestAnimationFrame(()=>{ ring.style.transition='stroke-dashoffset 1.3s cubic-bezier(.2,.8,.2,1)';
+      ring.style.strokeDashoffset = circ*(1-Math.min(rate,1)); });
+    // count
+    const pct = document.getElementById('pctNum'); let s=null;
+    function step(t){ if(!s)s=t; const p=Math.min((t-s)/1100,1);
+      pct.textContent=nf(rate*100*p,2)+' %'; if(p<1)requestAnimationFrame(step); }
+    requestAnimationFrame(step);
+    // goal bars
+    document.getElementById('bar95').style.width = (D.billed/D.target95*100).toFixed(1)+'%';
+    document.getElementById('bar100').style.width = (D.billed/D.target100*100).toFixed(1)+'%';
+  }
+
+  let futurePerDay = (D.target95 - D.billed)/D.remainingDays;
+  function maxH(){ return 48; } // chart scale ceiling in hours
+
+  function buildChart(){
+    const c = document.getElementById('chart'); c.innerHTML='';
+    const scale = maxH();
+    D.done.forEach(([wk,av,bi])=>{
+      const r = av>0 ? bi/av : 0;
+      const cls = r>=1 ? 'gold' : (r>=0.95 ? 'good' : 'ok');
+      c.appendChild(colEl(wk, av/scale, bi/scale, cls, bi, av, false));
+    });
+    D.future.forEach((o)=>{
+      const need = futurePerDay * o.days;
+      c.appendChild(colEl(o.wk, o.avail/scale, need/scale, 'future', need, o.avail, true));
+    });
+  }
+  function colEl(wk, avFrac, biFrac, cls, biVal, avVal, future){
+    const col=document.createElement('div'); col.className='col';
+    col.innerHTML =
+      '<div class="wk">'+nf(biVal)+'</div>'+
+      '<div class="stack">'+
+        '<div class="avail" style="height:'+(avFrac*100).toFixed(1)+'%"></div>'+
+        '<div class="billed '+cls+'" data-h="'+(biFrac*100).toFixed(1)+'" style="height:0"></div>'+
+      '</div>'+
+      '<div class="wknum '+(future?'future':'')+'">'+wk+'</div>';
+    col.title = 'Uke '+wk+': '+nf(biVal)+' t fakturert mot '+nf(avVal)+' t baseline'
+      + (avVal>0 ? ' ('+nf(biVal/avVal*100,0)+' %)' : '');
+    return col;
+  }
+  function drawFutureBars(perDay){
+    futurePerDay = perDay;
+    buildChart();
+    requestAnimationFrame(()=>{ document.querySelectorAll('.billed').forEach(b=>{ b.style.height=b.dataset.h+'%'; }); });
+  }
+
+  // init
+  renderStats();
+  renderSparkles();
+  renderGoals();
+  buildChart();
+  setFocus(95);
+  window.addEventListener('load', ()=>{ animate(); requestAnimationFrame(()=>{
+    document.querySelectorAll('.billed').forEach(b=>{ b.style.height=b.dataset.h+'%'; }); }); });
+</script>
+</body>
+</html>
