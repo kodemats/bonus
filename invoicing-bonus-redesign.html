@@ -168,6 +168,12 @@
   .card .csub{color:var(--muted);font-size:13px;margin-bottom:20px}
   .chart{display:flex;align-items:flex-end;gap:14px;height:210px;padding:0 4px}
   .col{flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;height:100%;justify-content:flex-end}
+  .stack{cursor:pointer}
+  .tip{position:fixed;z-index:100;background:var(--navy);color:#fff;font-size:11.5px;font-weight:600;
+    line-height:1.35;max-width:210px;text-align:center;padding:7px 10px;border-radius:9px;
+    box-shadow:0 8px 20px rgba(11,42,74,.28);pointer-events:none;opacity:0;transition:opacity .08s;
+    transform:translate(-50%, calc(-100% - 12px))}
+  .tip.show{opacity:1}
   .stack{position:relative;width:60%;max-width:34px;height:100%;display:flex;flex-direction:column;justify-content:flex-end}
   .stack .avail{position:absolute;left:0;right:0;bottom:0;border-radius:7px;background:repeating-linear-gradient(135deg,#F0E6C4,#F0E6C4 6px,#F5EED2 6px,#F5EED2 12px);border:1px dashed #DEC97E}
   .stack .billed{position:relative;border-radius:7px;width:100%;transition:height 1s cubic-bezier(.2,.8,.2,1)}
@@ -329,7 +335,7 @@
   <!-- CHART -->
   <div class="card">
     <h3>Timer per uke</h3>
-    <div class="csub">Heltrukken stolpe = fakturert, farget etter oppnådd andel av uka. Stiplet ramme = baseline/mål. Uke 26 og 27 viser timene du trenger.</div>
+    <div class="csub">Tallet over = baseline (100 %). Heltrukken stolpe = fakturert, farget etter oppnådd andel av uka. Hold musa over en stolpe for fakturerte timer. Uke 26 og 27 viser timene du trenger.</div>
     <div class="chart" id="chart"></div>
     <div class="legend">
       <span><i class="sw" style="background:linear-gradient(180deg,#F4CE5E,#D69A1C)"></i> 100 %+ av uka</span>
@@ -343,19 +349,21 @@
 
 </div>
 
+<div class="tip" id="tip"></div>
+
 <script>
   // Tre eksempelpersoner. Samme kvartalskalender (baseline per uke), ulik fakturering.
   const FUTURE = [ {wk:26,days:5,avail:37.5}, {wk:27,days:2,avail:15} ];
   const personas = {
     // under 95 % hittil
     A: { done: [
-      [14,5,0],[15,30,30],[16,37.5,33],[17,37.5,30],[18,30,28],[19,37.5,36],
+      [14,5,3],[15,30,30],[16,37.5,33],[17,37.5,30],[18,30,28],[19,37.5,36],
       [20,30,28],[21,37.5,40],[22,30,28],[23,37.5,38],[24,37.5,35],[25,37.5,35]
     ], future: FUTURE },
     // mellom 95 % og 100 % hittil
     B: { done: [
-      [14,5,0],[15,30,31],[16,37.5,36],[17,37.5,34],[18,30,30],[19,37.5,38],
-      [20,30,30],[21,37.5,40],[22,30,30],[23,37.5,40],[24,37.5,37],[25,37.5,37]
+      [14,5,5],[15,30,31],[16,37.5,36],[17,37.5,34],[18,30,30],[19,37.5,38],
+      [20,30,30],[21,37.5,35],[22,30,30],[23,37.5,40],[24,37.5,37],[25,37.5,37]
     ], future: FUTURE },
     // over 100 % hittil (de reelle tallene)
     C: { done: [
@@ -540,14 +548,16 @@
   function colEl(wk, avFrac, biFrac, cls, biVal, avVal, future){
     const col=document.createElement('div'); col.className='col';
     col.innerHTML =
-      '<div class="wk">'+nf(biVal)+'</div>'+
+      '<div class="wk">'+nf(avVal)+'</div>'+
       '<div class="stack">'+
         '<div class="avail" style="height:'+(avFrac*100).toFixed(1)+'%"></div>'+
         '<div class="billed '+cls+'" data-h="'+(biFrac*100).toFixed(1)+'" style="height:0"></div>'+
       '</div>'+
       '<div class="wknum '+(future?'future':'')+'">'+wk+'</div>';
-    col.title = 'Uke '+wk+': '+nf(biVal)+' t fakturert mot '+nf(avVal)+' t baseline'
-      + (avVal>0 ? ' ('+nf(biVal/avVal*100,0)+' %)' : '');
+    col.dataset.tip = future
+      ? 'Uke '+wk+': baseline '+nf(avVal)+' t (100 %), trenger '+nf(biVal)+' t for valgt mål'
+      : 'Uke '+wk+': fakturert '+nf(biVal)+' t'
+        + (avVal>0 ? ' ('+nf(biVal/avVal*100,0)+' % av baseline '+nf(avVal)+' t)' : '');
     return col;
   }
   function drawFutureBars(perDay){
@@ -555,6 +565,19 @@
     buildChart();
     requestAnimationFrame(()=>{ document.querySelectorAll('.billed').forEach(b=>{ b.style.height=b.dataset.h+'%'; }); });
   }
+
+  // tooltip som følger musen, kun aktiv over selve stolpen
+  const tip = document.getElementById('tip');
+  const chartEl = document.getElementById('chart');
+  chartEl.addEventListener('mousemove', e => {
+    const stack = e.target.closest('.stack');
+    if(!stack){ tip.classList.remove('show'); return; }
+    tip.textContent = stack.closest('.col').dataset.tip;
+    tip.style.left = e.clientX + 'px';
+    tip.style.top  = e.clientY + 'px';
+    tip.classList.add('show');
+  });
+  chartEl.addEventListener('mouseleave', ()=> tip.classList.remove('show'));
 
   // init
   renderSparkles();
