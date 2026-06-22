@@ -389,6 +389,8 @@
     D.target100 = D.availableToDate + remBaseline;
     D.target95 = 0.95 * D.target100;
     rate = D.billed / D.availableToDate;
+    document.getElementById('pctLbl').textContent =
+      nf(D.billed) + ' av ' + nf(D.availableToDate) + ' t fakturert';
     ['A','B','C'].forEach(k => document.getElementById('p'+k).classList.toggle('on', k===key));
     renderStats();
     renderGoals();
@@ -439,14 +441,13 @@
     document.getElementById('statGapD').textContent =
       (ahead>=0 ? 'foran ' : 'bak ') + f + ' %-linja hittil';
 
-    const tierDiff = (rate - lineRate)*100;
-    document.getElementById('tierDot').style.background = tierDiff>=0 ? 'var(--green)' : 'var(--behind)';
+    document.getElementById('tierDot').style.background = ahead>=0 ? 'var(--green)' : 'var(--behind)';
     document.getElementById('tierText').textContent =
-      nf(Math.abs(tierDiff)) + (tierDiff>=0 ? ' % over ' : ' % under ') + f + ' %-bonusen';
+      nf(Math.abs(ahead)) + ' t ' + (ahead>=0 ? 'over ' : 'under ') + f + ' %-bonusen';
 
     // glitter når du er over valgt bonusmål
     document.querySelector('.gauge').classList.toggle('celebrate', achieved);
-    document.getElementById('securedPct').textContent = nf(Math.abs(tierDiff)) + ' % over ' + f + ' %';
+    document.getElementById('securedPct').textContent = nf(Math.abs(ahead)) + ' t over ' + f + ' %';
 
     // tegn fremtidige stolper på nytt
     drawFutureBars(perDay);
@@ -462,7 +463,7 @@
       if(hit) hits++;
       const i = document.createElement('i');
       i.className = hit ? 'hit' : 'miss';
-      i.title = 'Uke '+wk+': '+(av>0 ? nf(r*100,0)+' %' : '–');
+      i.title = 'Uke '+wk+': '+(av>0 ? nf(r*100,0)+' %' : '-');
       boxes.appendChild(i);
     });
     document.getElementById('streakV').textContent = hits + ' / ' + D.done.length;
