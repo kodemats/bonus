@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Faktureringsbonus - forslag til redesign</title>
+<title>Bonusjakten</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -80,6 +80,7 @@
   .databar label{display:inline-flex;align-items:center;gap:6px;color:#9FB6C9}
   .databar select,.databar input{font-family:inherit;font-size:12px;color:#CDD9E5;background:#0F2433;
     border:1px solid #3F5D78;border-radius:6px;padding:5px 7px}
+  .databar .codewarn{font-size:12px;color:#04222E;background:#E9C766;border-radius:6px;padding:5px 10px;font-weight:600}
 
   .disclaimer{max-width:680px;margin:34px auto 0;text-align:center;font-size:12px;line-height:1.5;
     color:var(--muted);border-top:1px solid var(--line);padding-top:18px}
@@ -261,6 +262,7 @@
   <input type="file" id="file" accept=".xlsx,.xls" hidden />
   <button type="button" id="reset">&#8634; Nullstill</button>
   <span class="hint" id="fileinfo">Ingen fil lastet</span>
+  <span class="codewarn" id="codewarn" style="display:none"></span>
   <span class="pset">
     <label>Kvartal
       <select id="quarter">
@@ -278,7 +280,7 @@
 
   <div class="head">
     <div>
-      <h1>Faktureringsbonus</h1>
+      <h1>Bonusjakten</h1>
       <p>Hvor nær du er kvartalsbonusen og hva som skal til for å nå den.</p>
     </div>
   </div>
@@ -470,11 +472,25 @@
   const nf = (n, d=1) => n.toLocaleString('nb-NO', {minimumFractionDigits:d, maximumFractionDigits:d});
   const sum = (a,i) => a.reduce((s,r)=>s+r[i], 0);
 
-  // timetyper som IKKE teller som gyldig tid i bonusberegningen
-  const EXCLUDE = /lunsj|flexitime|fleksitid|sykdom|sykefrav|leave|avspaser|permisjon|heimevern|\bkks\b|fagkveld/i;
-  const isValidType = (t) => t && !EXCLUDE.test(t);
-  const isFerie = (t) => /ferie/i.test(t) && !/ubetalt/i.test(t);  // ordinær ferie teller
+  // Xledger-timekoder klassifisert mot bonusreglene (nøkkel = kode foran " - ").
+  // TELLER som gyldig tid i bonusberegningen:
+  const TELLER = new Set([
+    '0',    // Normaltid (fakturerbart)
+    '0B',   // Interntid som teller i bonusberegning (inkl. rolletimer)
+    '301'   // Ferie (ordinær) – teller, men à 7,5 t/dag
+  ]);
+  // Kjente koder som IKKE teller (resten varsles som ukjent):
+  const TELLER_IKKE = new Set([
+    '50','100','125','140','150','200',          // Overtid – timene ligger i Normaltid, dette er tillegg
+    'RO175','RO176','RO200','RO225',             // Overtime – samme
+    'OC',                                        // On Call
+    '400',                                       // Leave
+    '420','430','440','445','450','460',         // Sykefravær / sykt barn / lovfestet
+    'F1','F2',                                   // Flexitime
+    'L'                                          // Lunsj
+  ]);
   const FERIE_REG = 8;   // ferie føres som 8 t/dag i Xledger; bonus teller D.normalDay (7,5)
+  const codeOf = (t) => (t||'').split(/\s*-\s*/)[0].trim();   // "0B - Interntid…" -> "0B"
 
   // --- norske helligdager (røde dager man-fre) for et gitt år ---
   function easterSunday(y){
@@ -599,26 +615,37 @@
     if(ttCol<0) ttCol=2;
     const colWeek={};
     header.forEach((c,i)=>{ const n=Number(c); if(Number.isInteger(n)&&n>=1&&n<=53) colWeek[i]=n; });
-    const valid={};
+    const valid={}, unknown=new Set();
     for(let r=hIdx+1;r<rows.length;r++){
       const row=rows[r]; const tt=row[ttCol];
-      if(!isValidType(tt)) continue;                 // hopper over ekskluderte + sum-rad (uten timetype)
-      // ferie føres i Xledger som 8 t/dag, men bonusberegningen teller 7,5 t/dag
-      const factor = isFerie(tt) ? D.normalDay/FERIE_REG : 1;
+      if(typeof tt!=='string' || !tt.trim()) continue;   // sum-rad / tomme rader
+      const code=codeOf(tt);
+      if(!TELLER.has(code)){
+        if(!TELLER_IKKE.has(code)) unknown.add(tt);       // ukjent kode -> varsle brukeren
+        continue;
+      }
+      // ferie (301) føres som 8 t/dag i Xledger, men bonusberegningen teller 7,5 t/dag
+      const factor = code==='301' ? D.normalDay/FERIE_REG : 1;
       for(const i in colWeek){
         const v=Number(row[i]);
         if(v) valid[colWeek[i]]=(valid[colWeek[i]]||0)+v*factor;
       }
     }
-    return valid;
+    return {valid, unknown:[...unknown]};
   }
   document.getElementById('file').addEventListener('change', e=>{
     const f=e.target.files[0]; if(!f) return;
     const reader=new FileReader();
     reader.onload=ev=>{
       try{
-        lastValidByWeek=parseWorkbook(new Uint8Array(ev.target.result));
+        const res=parseWorkbook(new Uint8Array(ev.target.result));
+        lastValidByWeek=res.valid;
         document.getElementById('fileinfo').textContent=f.name+' · '+Object.keys(lastValidByWeek).length+' uker lest';
+        const cw=document.getElementById('codewarn');
+        if(res.unknown.length){
+          cw.style.display='';
+          cw.textContent='⚠ '+res.unknown.length+' ukjente timekoder (teller ikke): '+res.unknown.join(', ');
+        } else { cw.style.display='none'; cw.textContent=''; }
         document.getElementById('onboarding').style.display='none';   // skjul tom tilstand
         document.getElementById('databar').style.display='';          // vis headerlinjen
         document.getElementById('dash').style.display='';             // vis dashbordet
@@ -637,6 +664,7 @@
     lastValidByWeek = null;
     document.getElementById('file').value = '';
     document.getElementById('fileinfo').textContent = 'Ingen fil lastet';
+    document.getElementById('codewarn').style.display = 'none';
     document.getElementById('dash').style.display = 'none';
     document.getElementById('databar').style.display = 'none';
     document.getElementById('onboarding').style.display = '';
