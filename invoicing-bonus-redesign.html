@@ -74,6 +74,43 @@
     background:transparent;border:1px dashed #3F5D78;border-radius:6px;padding:6px 11px;cursor:pointer;transition:.15s}
   .databar button:hover{border-color:#5F86A6;color:#fff}
   .databar button.on{background:#13B5DC;border-color:#13B5DC;border-style:solid;color:#04222E;font-weight:700}
+  .databar .upl{font-family:inherit;font-size:12px;font-weight:700;color:#04222E;background:#13B5DC;
+    border:1px solid #13B5DC;border-radius:6px;padding:6px 12px;cursor:pointer;transition:.15s}
+  .databar .upl:hover{background:#3FC7E6}
+  .databar label{display:inline-flex;align-items:center;gap:6px;color:#9FB6C9}
+  .databar select,.databar input{font-family:inherit;font-size:12px;color:#CDD9E5;background:#0F2433;
+    border:1px solid #3F5D78;border-radius:6px;padding:5px 7px}
+
+  /* ---------- onboarding / tom tilstand ---------- */
+  .onb{display:flex;justify-content:center;margin:18px 0 40px}
+  .onb-card{max-width:680px;width:100%;background:#fff;border:1px solid var(--line);border-radius:24px;
+    padding:34px 36px;box-shadow:var(--shadow);text-align:center}
+  .onb-card h2{font-size:24px;font-weight:800}
+  .onb-card .lead{color:var(--muted);font-size:15px;margin:10px 0 22px;max-width:520px;margin-inline:auto}
+  .onb-steps{list-style:none;padding:0;margin:0 auto 24px;max-width:430px;text-align:left;display:flex;flex-direction:column;gap:11px}
+  .onb-steps li{display:flex;gap:12px;align-items:flex-start;font-size:14.5px;color:var(--ink)}
+  .onb-steps .n{flex:none;width:24px;height:24px;border-radius:50%;background:var(--navy);color:#fff;
+    font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center}
+  .onb-steps b{color:var(--navy)}
+  /* mock av Xledger-spørringen */
+  .onb-shot{border:1px solid #DCE7F0;border-radius:14px;background:#F7FBFE;padding:14px 16px;margin:0 auto 26px;
+    max-width:520px;text-align:left;box-shadow:var(--shadow-sm)}
+  .onb-shot .srow{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+  .onb-shot .srow + .srow{margin-top:10px}
+  .onb-shot .f{display:inline-flex;flex-direction:column;gap:2px;background:#fff;border:1px solid #D6E3EE;
+    border-radius:8px;padding:6px 10px;font-size:13px;color:var(--ink);min-width:96px}
+  .onb-shot .f i{font-style:normal;font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+  .onb-shot .f b{font-weight:700;color:var(--navy)}
+  .onb-shot .hl{border-color:var(--cyan);box-shadow:0 0 0 2px rgba(19,181,220,.18)}
+  .onb-shot .chk{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:700;color:var(--navy);
+    background:#fff;border:1px solid #D6E3EE;border-radius:8px;padding:8px 11px}
+  .onb-shot .xbtn{display:inline-flex;align-items:center;gap:6px;background:#1F7A3D;color:#fff;font-size:13px;
+    font-weight:700;border-radius:8px;padding:8px 13px;margin-left:auto}
+  .onb-card .upl-big{display:inline-flex;align-items:center;gap:9px;background:var(--cyan);color:#04222E;
+    font-weight:800;font-size:15px;border-radius:12px;padding:13px 26px;cursor:pointer;transition:.15s;
+    box-shadow:0 8px 20px rgba(19,181,220,.32)}
+  .onb-card .upl-big:hover{background:#3FC7E6}
+  .onb-note{margin-top:14px;font-size:12.5px;color:var(--muted)}
 
   /* ---------- hero ---------- */
   .hero{
@@ -121,11 +158,22 @@
   .goal-name{font-family:'Plus Jakarta Sans';font-weight:800;font-size:18px;display:flex;align-items:center;gap:9px}
   .goal-name .badge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px}
   .b95{background:#E7F7F0;color:var(--green-deep)}
-  .b100{background:#FBF1D8;color:#9A7B16}
+  .b100{background:#E7F7F0;color:var(--green-deep)}
   .goal-hours{font-size:13px;color:var(--muted)}
   .goal-hours b{color:var(--navy);font-size:15px}
   .bar{height:14px;border-radius:999px;background:#EEF3F8;margin:14px 0 10px;overflow:hidden;position:relative}
-  .bar > span{display:block;height:100%;border-radius:999px;transition:width 1.1s cubic-bezier(.2,.8,.2,1)}
+  .bar > span{display:block;height:100%;border-radius:999px;position:relative;overflow:hidden;
+    transition:width 1.1s cubic-bezier(.2,.8,.2,1)}
+  /* «in progress»: bevegelige striper i fyllet */
+  .bar > span.loading::after{content:"";position:absolute;inset:0;
+    background:repeating-linear-gradient(45deg,rgba(255,255,255,.22) 0 9px,transparent 9px 18px);
+    background-size:25.5px 100%;animation:barstripes .8s linear infinite}
+  @keyframes barstripes{from{background-position:0 0}to{background-position:25.5px 0}}
+  /* fullt: lysende puls som sveiper gjennom */
+  .bar > span.done::after{content:"";position:absolute;top:0;bottom:0;left:0;width:45%;
+    background:linear-gradient(90deg,transparent,rgba(255,255,255,.6),transparent);
+    transform:translateX(-130%);animation:barpulse 2.1s ease-in-out infinite}
+  @keyframes barpulse{0%{transform:translateX(-130%)}55%,100%{transform:translateX(270%)}}
   .bar .marker{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--navy);opacity:.35}
   .goal-foot{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
   .pill{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:600;padding:6px 12px;border-radius:999px}
@@ -203,25 +251,65 @@
 </head>
 <body>
 
-<div class="databar">
-  <span class="tag"><span class="gear">&#9881;</span> Personas</span>
+<div class="databar" id="databar" style="display:none">
+  <span class="tag"><span class="gear">&#9881;</span> Data</span>
+  <label class="upl" for="file">&#128193; Bytt Excel-ark</label>
+  <input type="file" id="file" accept=".xlsx,.xls" hidden />
+  <button type="button" id="reset">&#8634; Nullstill</button>
+  <span class="hint" id="fileinfo">Ingen fil lastet</span>
   <span class="pset">
-    <button id="pA" onclick="applyPersona('A')">Person A &middot; under 95 %</button>
-    <button id="pB" onclick="applyPersona('B')">Person B &middot; 95-100 %</button>
-    <button id="pC" class="on" onclick="applyPersona('C')">Person C &middot; over 100 %</button>
+    <label>Kvartal
+      <select id="quarter">
+        <option value="1">Q1</option>
+        <option value="2" selected>Q2</option>
+        <option value="3">Q3</option>
+        <option value="4">Q4</option>
+      </select>
+    </label>
+    <label>&Aring;r <input id="year" type="number" value="2026" style="width:64px" /></label>
   </span>
 </div>
 
 <div class="wrap">
 
-  <div class="crumbs"><span class="arrow">&larr;</span> Min side</div>
-
   <div class="head">
     <div>
       <h1>Faktureringsbonus</h1>
-      <p>Hvor nær du er kvartalsbonusen, og nøyaktig hva som skal til for å nå den.</p>
+      <p>Hvor nær du er kvartalsbonusen og hva som skal til for å nå den.</p>
     </div>
   </div>
+
+  <!-- TOM TILSTAND: vises til en fil er lastet -->
+  <div class="onb" id="onboarding">
+    <div class="onb-card">
+      <h2>Last inn timene dine fra Xledger</h2>
+      <p class="lead">Dashbordet bygges fra en Excel-eksport fra Xledger &laquo;Min timesp&oslash;rring&raquo;. Sett opp sp&oslash;rringen slik f&oslash;r du laster ned:</p>
+      <ol class="onb-steps">
+        <li><span class="n">1</span><span><b>Tidsverdi</b> = &laquo;Timer&raquo;</span></li>
+        <li><span class="n">2</span><span><b>Tidsintervall</b> = &laquo;Hver uke&raquo;</span></li>
+        <li><span class="n">3</span><span><b>Fra/Til dato</b> = hele kvartalet, f.eks. <b>01.04.2026</b> &ndash; <b>30.06.2026</b></span></li>
+        <li><span class="n">4</span><span>Huk p&aring; <b>Timetype</b> og <b>Desimaler</b></span></li>
+        <li><span class="n">5</span><span>Klikk <b>Excel</b> for &aring; laste ned fila</span></li>
+      </ol>
+      <div class="onb-shot" aria-hidden="true">
+        <div class="srow">
+          <span class="f"><i>Fra dato</i><b>01.04.2026</b></span>
+          <span class="f"><i>Til dato</i><b>30.06.2026</b></span>
+          <span class="f hl"><i>Tidsverdi</i><b>Timer &#9662;</b></span>
+          <span class="f hl"><i>Tidsintervall</i><b>Hver uke &#9662;</b></span>
+        </div>
+        <div class="srow">
+          <span class="chk hl">&#9745; Timetype</span>
+          <span class="chk hl">&#9745; Desimaler</span>
+          <span class="xbtn">&#11015; Excel</span>
+        </div>
+      </div>
+      <label class="upl-big" for="file">&#128193; Velg Excel-fil</label>
+      <div class="onb-note">Filen leses kun i nettleseren din &ndash; ingenting lastes opp.</div>
+    </div>
+  </div>
+
+  <div id="dash" style="display:none">
 
   <div class="tabs">
     <div class="tab active">Dette kvartalet</div>
@@ -236,7 +324,7 @@
       <button id="t95" class="on" onclick="setFocus(95)">95 %-bonus</button>
       <button id="t100" onclick="setFocus(100)">100 %-bonus</button>
     </div>
-    <span style="font-size:13px;color:var(--muted)">Igjen av kvartalet: uke 26 + 2 dager i uke 27</span>
+    <span style="font-size:13px;color:var(--muted)" id="remainLbl">Igjen av kvartalet: &ndash;</span>
   </div>
 
   <!-- HERO -->
@@ -246,11 +334,15 @@
         <div class="sparkles" id="sparkles"></div>
         <svg width="230" height="230" viewBox="0 0 230 230">
           <circle cx="115" cy="115" r="100" fill="none" stroke="#DCEAF3" stroke-width="16"/>
-          <!-- 95% marker -->
-          <circle cx="115" cy="115" r="100" fill="none" stroke="#33B98A" stroke-width="16"
-            stroke-linecap="round" stroke-dasharray="2 626" stroke-dashoffset="-595" opacity=".9"/>
           <circle id="progRing" cx="115" cy="115" r="100" fill="none" stroke="url(#g1)" stroke-width="16"
             stroke-linecap="round" stroke-dasharray="628" stroke-dashoffset="628"/>
+          <!-- målmarkør (flyttes mellom 95 % og 100 %), tegnet OPPÅ fremdriftsringen -->
+          <circle id="targetRingBg" cx="115" cy="115" r="100" fill="none" stroke="#fff" stroke-width="20"
+            stroke-dasharray="7 621" stroke-dashoffset="-595"
+            style="transition:stroke-dashoffset .5s cubic-bezier(.2,.8,.2,1)"/>
+          <circle id="targetRing" cx="115" cy="115" r="100" fill="none" stroke="#33B98A" stroke-width="20"
+            stroke-dasharray="3 625" stroke-dashoffset="-596"
+            style="transition:stroke-dashoffset .5s cubic-bezier(.2,.8,.2,1),stroke .3s"/>
           <defs>
             <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
               <stop offset="0" stop-color="#13B5DC"/>
@@ -274,7 +366,7 @@
     <div class="goals">
       <div class="goal focus" id="goal95">
         <div class="goal-top">
-          <div class="goal-name">Bonus 1 <span class="badge b95">95 %</span></div>
+          <div class="goal-name">Bonustrinn 1 <span class="badge b95">95 %</span></div>
           <div class="goal-hours" id="hours95"><b>396,5</b> / 418 t for hele kvartalet</div>
         </div>
         <div class="bar"><span id="bar95" style="width:0;background:linear-gradient(90deg,#3FC796,#1F9E72)"></span></div>
@@ -286,10 +378,10 @@
 
       <div class="goal" id="goal100">
         <div class="goal-top">
-          <div class="goal-name">Bonus 2 <span class="badge b100">100 %</span></div>
+          <div class="goal-name">Bonustrinn 2 <span class="badge b100">100 %</span></div>
           <div class="goal-hours" id="hours100"><b>396,5</b> / 440 t for hele kvartalet</div>
         </div>
-        <div class="bar"><span id="bar100" style="width:0;background:linear-gradient(90deg,#F0C44E,#D69A1C)"></span></div>
+        <div class="bar"><span id="bar100" style="width:0;background:linear-gradient(90deg,#3FC796,#1F9E72)"></span></div>
         <div class="goal-foot">
           <span class="pill ahead" id="pill100">9 t foran skjema</span>
           <span class="goal-cta" id="cta100"><b>43,5 t</b> igjen, ca. 6,2 t/dag de 7 siste dagene</span>
@@ -302,12 +394,12 @@
   <div class="mission">
     <div>
       <div class="eyebrow">Ditt trekk denne uka</div>
-      <h2 id="missionTitle">Fakturer 15,4 timer i uke 26 for å sikre Bonus 1</h2>
+      <h2 id="missionTitle">Fakturer 15,4 timer i uke 26 for å sikre Bonustrinn 1</h2>
       <p id="missionText">Det er 22,1 timer under en normaluke. Klar det, så gjenstår 6,1 t de 2 siste dagene i uke 27, og du lander trygt over 95 % ved kvartalsslutt.</p>
     </div>
     <div class="big">
       <div class="num" id="missionNum">15,4</div>
-      <div class="unit">fakturerbare timer i uke 26</div>
+      <div class="unit" id="missionUnit">fakturerbare timer</div>
       <div class="sub" id="missionSub">+ 6,1 t i uke 27 (2 dager)</div>
     </div>
   </div>
@@ -335,7 +427,7 @@
   <!-- CHART -->
   <div class="card">
     <h3>Timer per uke</h3>
-    <div class="csub">Tallet over = baseline (100 %). Heltrukken stolpe = fakturert, farget etter oppnådd andel av uka. Hold musa over en stolpe for fakturerte timer. Uke 26 og 27 viser timene du trenger.</div>
+    <div class="csub">Tallet over = baseline (100 %). Heltrukken stolpe = fakturert, farget etter oppnådd andel av uka. Hold musa over en stolpe for fakturerte timer. Gjenstående uker viser timene du trenger.</div>
     <div class="chart" id="chart"></div>
     <div class="legend">
       <span><i class="sw" style="background:linear-gradient(180deg,#F4CE5E,#D69A1C)"></i> 100 %+ av uka</span>
@@ -346,57 +438,200 @@
     </div>
   </div>
 
+  </div><!-- /#dash -->
 
 </div>
 
 <div class="tip" id="tip"></div>
 
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script>
-  // Tre eksempelpersoner. Samme kvartalskalender (baseline per uke), ulik fakturering.
-  const FUTURE = [ {wk:26,days:5,avail:37.5}, {wk:27,days:2,avail:15} ];
-  const personas = {
-    // under 95 % hittil
-    A: { done: [
-      [14,5,3],[15,30,30],[16,37.5,33],[17,37.5,30],[18,30,28],[19,37.5,36],
-      [20,30,28],[21,37.5,40],[22,30,28],[23,37.5,38],[24,37.5,35],[25,37.5,35]
-    ], future: FUTURE },
-    // mellom 95 % og 100 % hittil
-    B: { done: [
-      [14,5,5],[15,30,31],[16,37.5,36],[17,37.5,34],[18,30,30],[19,37.5,38],
-      [20,30,30],[21,37.5,35],[22,30,30],[23,37.5,40],[24,37.5,37],[25,37.5,37]
-    ], future: FUTURE },
-    // over 100 % hittil (de reelle tallene)
-    C: { done: [
-      [14,5,0],[15,30,32.5],[16,37.5,32.5],[17,37.5,28.5],[18,30,33],[19,37.5,39.5],
-      [20,30,35],[21,37.5,43],[22,30,31.5],[23,37.5,43.5],[24,37.5,38.5],[25,37.5,39]
-    ], future: FUTURE }
-  };
+  // ---------------------------------------------------------------
+  //  Faktureringsbonus-modell (prøveordning 1. halvår 2026)
+  //  Faktureringsgrad = gyldig tid / baseline
+  //    baseline per uke = arbeidsdager (man-fre, minus helligdager
+  //      og Computasdager) * 7,5 t
+  //    gyldig tid       = alle timetyper UNNTATT de som er ekskludert
+  //      (lunsj, flexitime, sykefravær/leave, avspasering, permisjon,
+  //       KKS, fagkveld, heimevern). Ordinær ferie teller MED.
+  // ---------------------------------------------------------------
 
   const D = { normalDay: 7.5 };
-  let rate = 0, currentFocus = 95, currentPersona = 'C';
+  let rate = 0, currentFocus = 95;
   const nf = (n, d=1) => n.toLocaleString('nb-NO', {minimumFractionDigits:d, maximumFractionDigits:d});
   const sum = (a,i) => a.reduce((s,r)=>s+r[i], 0);
 
-  function applyPersona(key){
-    currentPersona = key;
-    const p = personas[key];
-    D.done = p.done;
-    D.future = p.future;
-    D.availableToDate = sum(p.done, 1);
-    D.billed = sum(p.done, 2);
-    D.remainingDays = p.future.reduce((s,o)=>s+o.days, 0);
-    const remBaseline = p.future.reduce((s,o)=>s+o.avail, 0);
+  // timetyper som IKKE teller som gyldig tid i bonusberegningen
+  const EXCLUDE = /lunsj|flexitime|fleksitid|sykdom|sykefrav|leave|avspaser|permisjon|heimevern|\bkks\b|fagkveld/i;
+  const isValidType = (t) => t && !EXCLUDE.test(t);
+  const isFerie = (t) => /ferie/i.test(t) && !/ubetalt/i.test(t);  // ordinær ferie teller
+  const FERIE_REG = 8;   // ferie føres som 8 t/dag i Xledger; bonus teller D.normalDay (7,5)
+
+  // --- norske helligdager (røde dager man-fre) for et gitt år ---
+  function easterSunday(y){
+    const a=y%19,b=Math.floor(y/100),c=y%100,d=Math.floor(b/4),e=b%4,
+      f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),h=(19*a+b-d-g+15)%30,
+      i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7,
+      m=Math.floor((a+11*h+22*l)/451),
+      mo=Math.floor((h+l-7*m+114)/31),da=((h+l-7*m+114)%31)+1;
+    return new Date(y,mo-1,da);
+  }
+  function holidaySet(y){
+    const s=new Set(), add=d=>s.add(d.getFullYear()+'-'+d.getMonth()+'-'+d.getDate());
+    [[0,1],[4,1],[4,17],[11,25],[11,26]].forEach(([m,d])=>add(new Date(y,m,d)));
+    const E=easterSunday(y), off=n=>{const d=new Date(E);d.setDate(d.getDate()+n);return d;};
+    [-3,-2,1,39,50].forEach(n=>add(off(n)));  // skjærtors, langfre, 2.påske, Kr.himmelf, 2.pinse
+    return s;
+  }
+  const QUARTER = {1:[0,2],2:[3,5],3:[6,8],4:[9,11]}; // måned fra/til (0-indeksert)
+  const key = d => d.getFullYear()+'-'+d.getMonth()+'-'+d.getDate();
+
+  // kortdager: redusert kapasitet. Onsdag før skjærtorsdag = 5 t normaltid.
+  // Juleften/nyttårsaften kan også være korte – juster ved behov / bruk overstyringsfeltet.
+  function shortDays(y){
+    const m={}, E=easterSunday(y);
+    const wed=new Date(E); wed.setDate(wed.getDate()-4);   // onsdag før skjærtorsdag
+    m[key(wed)] = 5;
+    return m;
+  }
+
+  // Computasdager teller ikke som ordinære arbeidsdager i bonusberegningen.
+  const COMPUTAS = {
+    2026: [[1,6],[9,16]]   // 6. feb (Q1), 16. okt (Q4); måned 0-indeksert
+  };
+  function computasSet(y){
+    const s=new Set();
+    (COMPUTAS[y]||[]).forEach(([m,d])=>s.add(key(new Date(y,m,d))));
+    return s;
+  }
+
+  // arbeidsdager i kvartalet, gruppert per ISO-uke. Hver dag har timer (7,5 / kortdag).
+  function quarterWorkdays(year, q){
+    const hol = holidaySet(year), sd = shortDays(year), comp = computasSet(year), [m0,m1]=QUARTER[q];
+    const start=new Date(year,m0,1), end=new Date(year,m1+1,0);
+    const byWeek={};
+    for(let d=new Date(start); d<=end; d.setDate(d.getDate()+1)){
+      if(d.getDay()===0||d.getDay()===6) continue;            // helg
+      if(hol.has(key(d)) || comp.has(key(d))) continue;       // helligdag / Computasdag
+      const k=key(d), hrs = sd[k]!==undefined ? sd[k] : D.normalDay;
+      const wk=isoWeek(d);
+      (byWeek[wk]=byWeek[wk]||[]).push({date:new Date(d), hours:hrs});
+    }
+    return byWeek;
+  }
+  function isoWeek(date){
+    const d=new Date(Date.UTC(date.getFullYear(),date.getMonth(),date.getDate()));
+    const day=(d.getUTCDay()+6)%7; d.setUTCDate(d.getUTCDate()-day+3);
+    const first=new Date(Date.UTC(d.getUTCFullYear(),0,4));
+    return 1+Math.round(((d-first)/864e5 - 3 + ((first.getUTCDay()+6)%7))/7);
+  }
+
+  // bygg D.done / D.future fra gyldig tid per uke + kalender
+  function buildQuarter(validByWeek, year, q){
+    const byWeek=quarterWorkdays(year,q);
+    const weeks=Object.keys(byWeek).map(Number).sort((a,b)=>a-b);
+    const today=new Date(); today.setHours(0,0,0,0);
+    const done=[], future=[];
+    weeks.forEach(wk=>{
+      const arr=byWeek[wk];
+      const days=arr.length;
+      const baseline=arr.reduce((s,o)=>s+o.hours, 0);
+      const valid=validByWeek[wk]||0;
+      const remaining=arr.filter(o=>o.date>=today).length;
+      if(remaining>0 && valid===0){                            // uke ikke ført ennå -> fremtid
+        future.push({wk, days, avail:baseline});
+      } else {
+        done.push([wk, baseline, valid]);
+      }
+    });
+    return {done, future};
+  }
+
+  function applyData(){
+    D.availableToDate = sum(D.done, 1);
+    D.billed = sum(D.done, 2);
+    D.remainingDays = D.future.reduce((s,o)=>s+o.days, 0);
+    const remBaseline = D.future.reduce((s,o)=>s+o.avail, 0);
     D.target100 = D.availableToDate + remBaseline;
     D.target95 = 0.95 * D.target100;
-    rate = D.billed / D.availableToDate;
+    rate = D.availableToDate>0 ? D.billed / D.availableToDate : 0;
     document.getElementById('pctLbl').textContent =
       nf(D.billed) + ' av ' + nf(D.availableToDate) + ' t fakturert';
-    ['A','B','C'].forEach(k => document.getElementById('p'+k).classList.toggle('on', k===key));
+    document.getElementById('remainLbl').textContent = D.future.length
+      ? 'Igjen av kvartalet: ' + D.future.map(o=>'uke '+o.wk+' ('+o.days+' d)').join(' + ')
+      : 'Kvartalet er avsluttet';
     renderStats();
     renderGoals();
     setFocus(currentFocus);
     animate();
   }
+
+  // bygg dashbordet fra siste innleste fil + valgt kvartal/år
+  let lastValidByWeek = null;   // {uke: gyldig tid} fra opplastet fil
+  function rebuild(){
+    if(!lastValidByWeek) return;            // ingen fil lastet ennå -> behold tom tilstand
+    const year=+document.getElementById('year').value||2026;
+    const q=+document.getElementById('quarter').value||2;
+    const {done,future}=buildQuarter(lastValidByWeek, year, q);
+    D.done=done; D.future=future;
+    applyData();
+  }
+
+  // --- Excel-import (Xledger-eksport) ---
+  function parseWorkbook(buf){
+    const wb=XLSX.read(buf,{type:'array'});
+    const ws=wb.Sheets[wb.SheetNames[0]];
+    const rows=XLSX.utils.sheet_to_json(ws,{header:1,blankrows:false});
+    // finn header-raden (inneholder "Timetype") og kolonne->uke-mapping
+    let hIdx=rows.findIndex(r=>r.some(c=>typeof c==='string'&&/timetype/i.test(c)));
+    if(hIdx<0) hIdx=0;
+    const header=rows[hIdx];
+    let ttCol=header.findIndex(c=>typeof c==='string'&&/timetype/i.test(c));
+    if(ttCol<0) ttCol=2;
+    const colWeek={};
+    header.forEach((c,i)=>{ const n=Number(c); if(Number.isInteger(n)&&n>=1&&n<=53) colWeek[i]=n; });
+    const valid={};
+    for(let r=hIdx+1;r<rows.length;r++){
+      const row=rows[r]; const tt=row[ttCol];
+      if(!isValidType(tt)) continue;                 // hopper over ekskluderte + sum-rad (uten timetype)
+      // ferie føres i Xledger som 8 t/dag, men bonusberegningen teller 7,5 t/dag
+      const factor = isFerie(tt) ? D.normalDay/FERIE_REG : 1;
+      for(const i in colWeek){
+        const v=Number(row[i]);
+        if(v) valid[colWeek[i]]=(valid[colWeek[i]]||0)+v*factor;
+      }
+    }
+    return valid;
+  }
+  document.getElementById('file').addEventListener('change', e=>{
+    const f=e.target.files[0]; if(!f) return;
+    const reader=new FileReader();
+    reader.onload=ev=>{
+      try{
+        lastValidByWeek=parseWorkbook(new Uint8Array(ev.target.result));
+        document.getElementById('fileinfo').textContent=f.name+' · '+Object.keys(lastValidByWeek).length+' uker lest';
+        document.getElementById('onboarding').style.display='none';   // skjul tom tilstand
+        document.getElementById('databar').style.display='';          // vis headerlinjen
+        document.getElementById('dash').style.display='';             // vis dashbordet
+        rebuild();
+      }catch(err){
+        document.getElementById('fileinfo').textContent='Klarte ikke lese filen: '+err.message;
+      }
+    };
+    reader.readAsArrayBuffer(f);
+  });
+  ['quarter','year'].forEach(id=>
+    document.getElementById(id).addEventListener('change', rebuild));
+
+  // nullstill: tøm arket og gå tilbake til tom tilstand
+  document.getElementById('reset').addEventListener('click', ()=>{
+    lastValidByWeek = null;
+    document.getElementById('file').value = '';
+    document.getElementById('fileinfo').textContent = 'Ingen fil lastet';
+    document.getElementById('dash').style.display = 'none';
+    document.getElementById('databar').style.display = 'none';
+    document.getElementById('onboarding').style.display = '';
+  });
 
   function setFocus(f){
     currentFocus = f;
@@ -407,34 +642,60 @@
 
     const lineRate = f===95 ? 0.95 : 1.00;
     const target = f===95 ? D.target95 : D.target100;
+
+    // flytt målmarkøren på ringen til valgt terskel (95 % / 100 %)
+    const off = -(628 * lineRate);
+    document.getElementById('targetRing').style.strokeDashoffset = off + 1;
+    document.getElementById('targetRingBg').style.strokeDashoffset = off + 3;
+    document.getElementById('targetRing').style.stroke = f===95 ? '#1F9E72' : '#D69A1C';
     const rawNeed = target - D.billed;               // kan være negativ (allerede i mål)
     const need = Math.max(0, rawNeed);
-    const perDay = need / D.remainingDays;           // jevnt over de gjenstående dagene
-    const thisWeek = perDay * D.future[0].days;       // uke 26 (5 dager)
-    const nextWeek = perDay * D.future[1].days;       // uke 27 (2 dager)
-    const overtime = thisWeek - D.normalDay * D.future[0].days;
+    const perDay = D.remainingDays>0 ? need / D.remainingDays : 0;   // jevnt over de gjenstående dagene
+    const first = D.future[0];
+    const thisWeek = first ? perDay * first.days : 0;                 // første gjenstående uke
+    const restDays = D.remainingDays - (first ? first.days : 0);
+    const nextWeeks = perDay * restDays;                              // resten av kvartalet
+    const overtime = first ? thisWeek - D.normalDay * first.days : 0;
     const ahead = D.billed - lineRate*D.availableToDate;   // positiv = foran
     const achieved = rate >= lineRate;
 
-    if(rawNeed <= 0){
+    if(D.future.length === 0){
+      // kvartalet er avsluttet – ingen uker igjen å planlegge
       document.getElementById('missionTitle').textContent =
-        'Bonus ' + (f===95?1:2) + ' er i boks, bare hold normal drift';
+        achieved ? 'Bonustrinn ' + (f===95?1:2) + ' er sikret – kvartalet er avsluttet'
+                 : 'Kvartalet er avsluttet';
       document.getElementById('missionText').textContent =
-        'Du har allerede fakturert nok til ' + f + ' % for hele kvartalet. Alt du gjør i uke 26-27 er ren buffer.';
+        'Faktureringsgrad ved kvartalsslutt: ' + nf(rate*100,1) + ' %. '
+        + (achieved ? 'Du nådde ' + f + ' %-bonusen.' : 'Du nådde ikke ' + f + ' %-bonusen.');
+      document.getElementById('missionNum').textContent = nf(rate*100,1) + ' %';
+      document.getElementById('missionSub').textContent = 'endelig faktureringsgrad';
+    } else if(rawNeed <= 0){
+      document.getElementById('missionTitle').textContent =
+        'Bonustrinn ' + (f===95?1:2) + ' er i boks, bare hold normal drift';
+      document.getElementById('missionText').textContent =
+        'Du har allerede fakturert nok til ' + f + ' % for hele kvartalet. Alt du gjør i uke '
+        + D.future.map(o=>o.wk).join('/') + ' er ren buffer.';
       document.getElementById('missionNum').textContent = '0';
       document.getElementById('missionSub').textContent = 'ingen ekstra timer kreves';
     } else {
       document.getElementById('missionTitle').textContent =
-        'Fakturer ' + nf(thisWeek) + ' timer i uke 26 for å ' + (achieved?'sikre':'nå') + ' Bonus ' + (f===95?1:2);
+        'Fakturer ' + nf(thisWeek) + ' timer i uke ' + first.wk + ' for å ' + (achieved?'sikre':'nå') + ' Bonustrinn ' + (f===95?1:2);
       document.getElementById('missionText').textContent =
         (overtime>=0
           ? 'Det er ' + nf(overtime) + ' timer over en normaluke. '
           : 'Det er ' + nf(Math.abs(overtime)) + ' timer under en normaluke. ')
-        + 'Da gjenstår ' + nf(nextWeek) + ' t de 2 siste dagene i uke 27, og du når '
-        + f + ' % ved kvartalsslutt.';
+        + (restDays>0
+            ? 'Da gjenstår ' + nf(nextWeeks) + ' t resten av kvartalet, og du når ' + f + ' % ved kvartalsslutt.'
+            : 'Da når du ' + f + ' % ved kvartalsslutt.');
       document.getElementById('missionNum').textContent = nf(thisWeek);
-      document.getElementById('missionSub').textContent = '+ ' + nf(nextWeek) + ' t i uke 27 (2 dager)';
+      document.getElementById('missionSub').textContent =
+        first.days + ' fakturerbare dager i uke ' + first.wk
+        + (restDays>0 ? ' + ' + nf(nextWeeks) + ' t senere' : '');
     }
+    document.getElementById('missionUnit').textContent =
+      D.future.length === 0 ? 'endelig faktureringsgrad'
+      : rawNeed <= 0 ? 'fakturerbare timer'
+      : 'fakturerbare timer i uke ' + first.wk;
 
     document.getElementById('statGapK').textContent = ahead>=0 ? 'Forsprang' : 'Gap å tette';
     document.getElementById('statGap').textContent = nf(Math.abs(ahead)) + ' t';
@@ -501,13 +762,17 @@
     [[95,0.95,D.target95,'95'],[100,1.00,D.target100,'100']].forEach(([f,lr,tgt])=>{
       const ahead = D.billed - lr*D.availableToDate;
       const need = tgt - D.billed;
-      const perDay = need / D.remainingDays;
-      document.getElementById('hours'+f).innerHTML = '<b>'+nf(D.billed)+'</b> / '+tgt+' t for hele kvartalet';
+      const perDay = D.remainingDays>0 ? need / D.remainingDays : 0;
+      document.getElementById('hours'+f).innerHTML = '<b>'+nf(D.billed)+'</b> / '+nf(tgt)+' t for hele kvartalet';
       const pill = document.getElementById('pill'+f);
       pill.className = 'pill ' + (ahead>=0 ? 'ahead' : 'behind');
       pill.textContent = nf(Math.abs(ahead)) + (ahead>=0 ? ' t foran skjema' : ' t bak skjema');
       document.getElementById('cta'+f).innerHTML =
-        '<b>'+nf(need)+' t</b> igjen, ca. '+nf(perDay)+' t/dag de '+D.remainingDays+' siste dagene';
+        need <= 0
+          ? '<b>I mål</b> &middot; '+nf(-need)+' t buffer over '+f+' %'
+          : (D.remainingDays>0
+              ? '<b>'+nf(need)+' t</b> igjen, ca. '+nf(perDay)+' t/dag de '+D.remainingDays+' siste dagene'
+              : '<b>'+nf(need)+' t</b> manglet ved kvartalsslutt');
     });
   }
 
@@ -525,9 +790,14 @@
     function step(t){ if(myToken!==animToken) return; if(!s)s=t; const p=Math.min((t-s)/1100,1);
       pct.textContent=nf(targetRate*100*p,2)+' %'; if(p<1)requestAnimationFrame(step); }
     requestAnimationFrame(step);
-    // goal bars
-    document.getElementById('bar95').style.width = (D.billed/D.target95*100).toFixed(1)+'%';
-    document.getElementById('bar100').style.width = (D.billed/D.target100*100).toFixed(1)+'%';
+    // goal bars: bredde + tilstand (loading = i gang, done = mål nådd)
+    [['bar95', D.target95], ['bar100', D.target100]].forEach(([id, tgt])=>{
+      const el = document.getElementById(id);
+      el.style.width = (D.billed/tgt*100).toFixed(1)+'%';
+      const done = D.billed >= tgt;
+      el.classList.toggle('done', done);
+      el.classList.toggle('loading', !done);
+    });
   }
 
   let futurePerDay = 0;
@@ -582,7 +852,12 @@
 
   // init
   renderSparkles();
-  window.addEventListener('load', ()=> applyPersona('C'));
+  window.addEventListener('load', ()=>{
+    const now = new Date();                         // forhåndsvelg inneværende kvartal/år
+    document.getElementById('year').value = now.getFullYear();
+    document.getElementById('quarter').value = String(Math.floor(now.getMonth()/3) + 1);
+    // ingen rebuild her – dashbordet vises først når en fil er lastet
+  });
 </script>
 </body>
 </html>
