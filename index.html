@@ -294,7 +294,7 @@
       <ol class="onb-steps">
         <li><span class="n">1</span><span><b>Tidsverdi</b> = &laquo;Timer&raquo;</span></li>
         <li><span class="n">2</span><span><b>Tidsintervall</b> = &laquo;Hver uke&raquo;</span></li>
-        <li><span class="n">3</span><span><b>Fra/Til dato</b> = hele kvartalet, f.eks. <b>01.04.2026</b> &ndash; <b>30.06.2026</b></span></li>
+        <li><span class="n">3</span><span><b>Fra/Til dato</b> = hele kvartalet, f.eks. <b>01.04.2026</b> til <b>30.06.2026</b></span></li>
         <li><span class="n">4</span><span>Huk p&aring; <b>Timetype</b> og <b>Desimaler</b></span></li>
         <li><span class="n">5</span><span>Klikk <b>Excel</b> for &aring; laste ned fila</span></li>
       </ol>
@@ -312,7 +312,7 @@
         </div>
       </div>
       <label class="upl-big" for="file">&#128193; Velg Excel-fil</label>
-      <div class="onb-note">Filen leses kun i nettleseren din &ndash; ingenting lastes opp.</div>
+      <div class="onb-note">Filen leses kun i nettleseren din. Ingenting lastes opp.</div>
     </div>
   </div>
 
@@ -324,7 +324,7 @@
       <button id="t95" class="on" onclick="setFocus(95)">95 %-bonus</button>
       <button id="t100" onclick="setFocus(100)">100 %-bonus</button>
     </div>
-    <span style="font-size:13px;color:var(--muted)" id="remainLbl">Igjen av kvartalet: &ndash;</span>
+    <span style="font-size:13px;color:var(--muted)" id="remainLbl">Igjen av kvartalet:</span>
   </div>
 
   <!-- HERO -->
@@ -352,7 +352,7 @@
         </svg>
         <div class="ring-center">
           <div class="pct" id="pctNum">0,00 %</div>
-          <div class="pctlbl" id="pctLbl">– / – t</div>
+          <div class="pctlbl" id="pctLbl">0,0 / 0,0 t</div>
         </div>
       </div>
       <div class="tierflag">
@@ -463,6 +463,8 @@
   const D = { normalDay: 7.5 };
   let rate = 0, currentFocus = 95;
   const nf = (n, d=1) => n.toLocaleString('nb-NO', {minimumFractionDigits:d, maximumFractionDigits:d});
+  const nf0 = n => Number.isInteger(n) ? n.toLocaleString('nb-NO') : nf(n);   // dropp ,0 for hele tall
+  const timer = n => nf0(n) + (Math.abs(n)===1 ? ' time' : ' timer');         // entall/flertall
   const sum = (a,i) => a.reduce((s,r)=>s+r[i], 0);
 
   // Xledger-timekoder klassifisert mot bonusreglene (nøkkel = kode foran " - ").
@@ -470,12 +472,12 @@
   const TELLER = new Set([
     '0',    // Normaltid (fakturerbart)
     '0B',   // Interntid som teller i bonusberegning (inkl. rolletimer)
-    '301'   // Ferie (ordinær) – teller, men à 7,5 t/dag
+    '301'   // Ferie (ordinær): teller, men à 7,5 t/dag
   ]);
   // Kjente koder som IKKE teller (resten varsles som ukjent):
   const TELLER_IKKE = new Set([
-    '50','100','125','140','150','200',          // Overtid – timene ligger i Normaltid, dette er tillegg
-    'RO175','RO176','RO200','RO225',             // Overtime – samme
+    '50','100','125','140','150','200',          // Overtid: timene ligger i Normaltid, dette er tillegg
+    'RO175','RO176','RO200','RO225',             // Overtime: samme
     'OC',                                        // On Call
     '400',                                       // Leave
     '420','430','440','445','450','460',         // Sykefravær / sykt barn / lovfestet
@@ -505,7 +507,7 @@
   const key = d => d.getFullYear()+'-'+d.getMonth()+'-'+d.getDate();
 
   // kortdager: redusert kapasitet. Onsdag før skjærtorsdag = 5 t normaltid.
-  // Juleften/nyttårsaften kan også være korte – juster ved behov / bruk overstyringsfeltet.
+  // Juleften/nyttårsaften kan også være korte; juster ved behov / bruk overstyringsfeltet.
   function shortDays(y){
     const m={}, E=easterSunday(y);
     const wed=new Date(E); wed.setDate(wed.getDate()-4);   // onsdag før skjærtorsdag
@@ -582,7 +584,7 @@
       : 'Kvartalet er avsluttet';
     const fmtD = d => d.toLocaleDateString('nb-NO', {day:'numeric', month:'short'});
     document.getElementById('periodLbl').textContent = (D.from && D.to)
-      ? '📅 ' + fmtD(D.from) + ' – ' + fmtD(D.to) + ' ' + D.to.getFullYear()
+      ? '📅 ' + fmtD(D.from) + ' til ' + fmtD(D.to) + ' ' + D.to.getFullYear()
       : '';
     renderStats();
     renderGoals();
@@ -705,9 +707,9 @@
     document.getElementById('pctLbl').textContent = nf(D.billed) + ' / ' + nf(target) + ' t';
 
     if(D.future.length === 0){
-      // kvartalet er avsluttet – ingen uker igjen å planlegge
+      // kvartalet er avsluttet: ingen uker igjen å planlegge
       document.getElementById('missionTitle').textContent =
-        achieved ? 'Bonustrinn ' + (f===95?1:2) + ' er sikret – kvartalet er avsluttet'
+        achieved ? 'Bonustrinn ' + (f===95?1:2) + ' er sikret, kvartalet er avsluttet'
                  : 'Kvartalet er avsluttet';
       document.getElementById('missionText').textContent =
         'Faktureringsgrad ved kvartalsslutt: ' + nf(rate*100,1) + ' %. '
@@ -723,24 +725,27 @@
       document.getElementById('missionNum').textContent = '0';
       document.getElementById('missionSub').textContent = 'ingen ekstra timer kreves';
     } else {
+      const ref = first.days===5 ? 'en normaluke'
+                : first.days===1 ? 'en vanlig arbeidsdag'
+                : nf0(first.days) + ' vanlige arbeidsdager';
       document.getElementById('missionTitle').textContent =
-        'Fakturer ' + nf(thisWeek) + ' timer i uke ' + first.wk + ' for å ' + (achieved?'sikre':'nå') + ' Bonustrinn ' + (f===95?1:2);
+        'Fakturer ' + timer(thisWeek) + ' i uke ' + first.wk + ' for å ' + (achieved?'sikre':'nå') + ' Bonustrinn ' + (f===95?1:2);
       document.getElementById('missionText').textContent =
         (overtime>=0
-          ? 'Det er ' + nf(overtime) + ' timer over en normaluke. '
-          : 'Det er ' + nf(Math.abs(overtime)) + ' timer under en normaluke. ')
+          ? 'Det er ' + timer(overtime) + ' mer enn ' + ref + '. '
+          : 'Det er ' + timer(Math.abs(overtime)) + ' mindre enn ' + ref + '. ')
         + (restDays>0
-            ? 'Da gjenstår ' + nf(nextWeeks) + ' t resten av kvartalet, og du når ' + f + ' % ved kvartalsslutt.'
+            ? 'Da gjenstår ' + timer(nextWeeks) + ' resten av kvartalet, og du når ' + f + ' % ved kvartalsslutt.'
             : 'Da når du ' + f + ' % ved kvartalsslutt.');
-      document.getElementById('missionNum').textContent = nf(thisWeek);
+      document.getElementById('missionNum').textContent = nf0(thisWeek);
       document.getElementById('missionSub').textContent =
-        first.days + ' fakturerbare dager i uke ' + first.wk
-        + (restDays>0 ? ' + ' + nf(nextWeeks) + ' t senere' : '');
+        (first.days===1 ? '1 fakturerbar dag' : first.days + ' fakturerbare dager') + ' i uke ' + first.wk
+        + (restDays>0 ? ' + ' + timer(nextWeeks) + ' senere' : '');
     }
     document.getElementById('missionUnit').textContent =
       D.future.length === 0 ? 'endelig faktureringsgrad'
       : rawNeed <= 0 ? 'fakturerbare timer'
-      : 'fakturerbare timer i uke ' + first.wk;
+      : (thisWeek===1 ? 'fakturerbar time' : 'fakturerbare timer') + ' i uke ' + first.wk;
 
     document.getElementById('statGapK').textContent = ahead>=0 ? 'Forsprang' : 'Gap å tette';
     document.getElementById('statGap').textContent = nf(Math.abs(ahead)) + ' t';
@@ -902,7 +907,7 @@
     const now = new Date();                         // forhåndsvelg inneværende kvartal/år
     document.getElementById('year').value = now.getFullYear();
     document.getElementById('quarter').value = String(Math.floor(now.getMonth()/3) + 1);
-    // ingen rebuild her – dashbordet vises først når en fil er lastet
+    // ingen rebuild her: dashbordet vises først når en fil er lastet
   });
 </script>
 </body>
