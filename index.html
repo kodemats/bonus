@@ -596,6 +596,8 @@
       : '';
     renderStats();
     renderGoals();
+    // sikt automatisk mot 100 % når 95 %-bonusen alt er sikret, ellers 95 %
+    currentFocus = (D.billed >= D.target95) ? 100 : 95;
     setFocus(currentFocus);
     animate();
   }
