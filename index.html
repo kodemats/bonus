@@ -318,13 +318,6 @@
 
   <div id="dash" style="display:none">
 
-  <div class="tabs">
-    <div class="tab active">Dette kvartalet</div>
-    <div class="tab">Forrige kvartal</div>
-    <div class="tab">I år</div>
-    <div class="tab">Forrige uke</div>
-  </div>
-
   <div class="toggle-row">
     <span class="lbl">Jeg sikter mot</span>
     <div class="seg">
@@ -359,8 +352,7 @@
         </svg>
         <div class="ring-center">
           <div class="pct" id="pctNum">0,00 %</div>
-          <div class="pctlbl" id="pctLbl">396,5 av 387,5 t fakturert</div>
-          <div class="since">Kvartalsstart &rarr; slutten av forrige uke</div>
+          <div class="pctlbl" id="pctLbl">– / – t</div>
         </div>
       </div>
       <div class="tierflag">
@@ -552,41 +544,39 @@
     return 1+Math.round(((d-first)/864e5 - 3 + ((first.getUTCDay()+6)%7))/7);
   }
 
-  // bygg D.done / D.future fra gyldig tid per uke + kalender
+  // bygg dashbord-data fra gyldig tid per uke + kalender (dag-presis)
   function buildQuarter(validByWeek, year, q){
     const byWeek=quarterWorkdays(year,q);
     const weeks=Object.keys(byWeek).map(Number).sort((a,b)=>a-b);
     const today=new Date(); today.setHours(0,0,0,0);
     const done=[], future=[];
-    let from=null, to=null;                                    // periode datasettet dekker (førte uker)
+    let availToDate=0, billed=0, remBaseline=0, remDays=0, from=null, to=null;
     weeks.forEach(wk=>{
       const arr=byWeek[wk];
-      const days=arr.length;
-      const baseline=arr.reduce((s,o)=>s+o.hours, 0);
-      const valid=validByWeek[wk]||0;
-      const remaining=arr.filter(o=>o.date>=today).length;
-      if(remaining>0 && valid===0){                            // uke ikke ført ennå -> fremtid
-        future.push({wk, days, avail:baseline});
-      } else {
-        done.push([wk, baseline, valid]);
-        const d0=arr[0].date, d1=arr[arr.length-1].date;
-        if(!from || d0<from) from=d0;
-        if(!to || d1>to) to=d1;
+      const past=arr.filter(o=>o.date<today);                 // passerte dager
+      const fut =arr.filter(o=>o.date>=today);                // i dag + senere (gjenstår)
+      const baseAll=arr.reduce((s,o)=>s+o.hours,0);
+      const basePast=past.reduce((s,o)=>s+o.hours,0);
+      const baseFut =fut.reduce((s,o)=>s+o.hours,0);
+      const valid=validByWeek[wk]||0;                          // ført tid (kun på passerte dager)
+      availToDate += basePast;
+      billed      += valid;
+      remBaseline += baseFut;
+      remDays     += fut.length;
+      if(fut.length===0) done.push([wk, baseAll, valid]);      // ferdig uke -> billed-stolpe
+      else               future.push({wk, days:fut.length, avail:baseFut}); // har dager igjen
+      if(past.length){
+        if(!from||past[0].date<from) from=past[0].date;
+        const d1=past[past.length-1].date; if(!to||d1>to) to=d1;
       }
     });
-    return {done, future, from, to};
+    return {done, future, availToDate, billed, remBaseline, remDays, from, to};
   }
 
   function applyData(){
-    D.availableToDate = sum(D.done, 1);
-    D.billed = sum(D.done, 2);
-    D.remainingDays = D.future.reduce((s,o)=>s+o.days, 0);
-    const remBaseline = D.future.reduce((s,o)=>s+o.avail, 0);
-    D.target100 = D.availableToDate + remBaseline;
+    D.target100 = D.availableToDate + D.remBaseline;
     D.target95 = 0.95 * D.target100;
     rate = D.availableToDate>0 ? D.billed / D.availableToDate : 0;
-    document.getElementById('pctLbl').textContent =
-      nf(D.billed) + ' av ' + nf(D.availableToDate) + ' t fakturert';
     document.getElementById('remainLbl').textContent = D.future.length
       ? 'Igjen av kvartalet: ' + D.future.map(o=>'uke '+o.wk+' ('+o.days+' d)').join(' + ')
       : 'Kvartalet er avsluttet';
@@ -608,9 +598,11 @@
     if(!lastValidByWeek) return;            // ingen fil lastet ennå -> behold tom tilstand
     const year=+document.getElementById('year').value||2026;
     const q=+document.getElementById('quarter').value||2;
-    const {done,future,from,to}=buildQuarter(lastValidByWeek, year, q);
-    D.from=from; D.to=to;
-    D.done=done; D.future=future;
+    const r=buildQuarter(lastValidByWeek, year, q);
+    D.done=r.done; D.future=r.future;
+    D.availableToDate=r.availToDate; D.billed=r.billed;
+    D.remBaseline=r.remBaseline; D.remainingDays=r.remDays;
+    D.from=r.from; D.to=r.to;
     applyData();
   }
 
@@ -707,7 +699,10 @@
     const nextWeeks = perDay * restDays;                              // resten av kvartalet
     const overtime = first ? thisWeek - D.normalDay * first.days : 0;
     const ahead = D.billed - lineRate*D.availableToDate;   // positiv = foran
-    const achieved = rate >= lineRate;
+    const achieved = D.billed >= target;                  // målet er sikret for hele kvartalet
+
+    // ring-senter: fakturert / mål for valgt trinn
+    document.getElementById('pctLbl').textContent = nf(D.billed) + ' / ' + nf(target) + ' t';
 
     if(D.future.length === 0){
       // kvartalet er avsluttet – ingen uker igjen å planlegge
@@ -754,7 +749,7 @@
 
     document.getElementById('tierDot').style.background = ahead>=0 ? 'var(--green)' : 'var(--behind)';
     document.getElementById('tierText').textContent =
-      nf(Math.abs(ahead)) + ' t ' + (ahead>=0 ? 'over ' : 'under ') + f + ' %-bonusen';
+      nf(Math.abs(ahead)) + ' t ' + (ahead>=0 ? 'foran ' : 'bak ') + f + ' %-skjema';
 
     // glitter når du er over valgt bonusmål
     document.querySelector('.gauge').classList.toggle('celebrate', achieved);
@@ -821,7 +816,8 @@
         need <= 0
           ? '<b>I mål</b> &middot; '+nf(-need)+' t buffer over '+f+' %'
           : (D.remainingDays>0
-              ? '<b>'+nf(need)+' t</b> igjen, ca. '+nf(perDay)+' t/dag de '+D.remainingDays+' siste dagene'
+              ? '<b>'+nf(need)+' t</b> igjen, ca. '+nf(perDay)+' t/dag '
+                + (D.remainingDays===1 ? 'siste dagen' : 'de '+D.remainingDays+' siste dagene')
               : '<b>'+nf(need)+' t</b> manglet ved kvartalsslutt');
     });
   }
