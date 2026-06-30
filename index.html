@@ -262,6 +262,7 @@
   <input type="file" id="file" accept=".xlsx,.xls" hidden />
   <button type="button" id="reset">&#8634; Nullstill</button>
   <span class="hint" id="fileinfo">Ingen fil lastet</span>
+  <span class="hint" id="periodLbl"></span>
   <span class="codewarn" id="codewarn" style="display:none"></span>
   <span class="pset">
     <label>Kvartal
@@ -557,6 +558,7 @@
     const weeks=Object.keys(byWeek).map(Number).sort((a,b)=>a-b);
     const today=new Date(); today.setHours(0,0,0,0);
     const done=[], future=[];
+    let from=null, to=null;                                    // periode datasettet dekker (førte uker)
     weeks.forEach(wk=>{
       const arr=byWeek[wk];
       const days=arr.length;
@@ -567,9 +569,12 @@
         future.push({wk, days, avail:baseline});
       } else {
         done.push([wk, baseline, valid]);
+        const d0=arr[0].date, d1=arr[arr.length-1].date;
+        if(!from || d0<from) from=d0;
+        if(!to || d1>to) to=d1;
       }
     });
-    return {done, future};
+    return {done, future, from, to};
   }
 
   function applyData(){
@@ -585,6 +590,10 @@
     document.getElementById('remainLbl').textContent = D.future.length
       ? 'Igjen av kvartalet: ' + D.future.map(o=>'uke '+o.wk+' ('+o.days+' d)').join(' + ')
       : 'Kvartalet er avsluttet';
+    const fmtD = d => d.toLocaleDateString('nb-NO', {day:'numeric', month:'short'});
+    document.getElementById('periodLbl').textContent = (D.from && D.to)
+      ? '📅 ' + fmtD(D.from) + ' – ' + fmtD(D.to) + ' ' + D.to.getFullYear()
+      : '';
     renderStats();
     renderGoals();
     setFocus(currentFocus);
@@ -597,7 +606,8 @@
     if(!lastValidByWeek) return;            // ingen fil lastet ennå -> behold tom tilstand
     const year=+document.getElementById('year').value||2026;
     const q=+document.getElementById('quarter').value||2;
-    const {done,future}=buildQuarter(lastValidByWeek, year, q);
+    const {done,future,from,to}=buildQuarter(lastValidByWeek, year, q);
+    D.from=from; D.to=to;
     D.done=done; D.future=future;
     applyData();
   }
@@ -664,6 +674,7 @@
     lastValidByWeek = null;
     document.getElementById('file').value = '';
     document.getElementById('fileinfo').textContent = 'Ingen fil lastet';
+    document.getElementById('periodLbl').textContent = '';
     document.getElementById('codewarn').style.display = 'none';
     document.getElementById('dash').style.display = 'none';
     document.getElementById('databar').style.display = 'none';
